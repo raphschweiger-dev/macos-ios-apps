@@ -15,22 +15,22 @@ export default function Setup({ data, update, toast }: Props) {
   const addHabit = () => {
     const name = newHabit.trim();
     if (!name) return;
-    update((d) => ({ ...d, habits: [...d.habits, { id: uid('h'), name, color: PALETTE[d.habits.length % PALETTE.length] }] }));
+    update((d) => ({ ...d, habits: [...d.habits, { id: uid('h'), name, color: PALETTE[d.habits.length % PALETTE.length], updatedAt: Date.now() }] }));
     setNewHabit('');
     toast(`Added habit "${name}"`);
   };
   const addOutcome = () => {
     const name = newOutcome.trim();
     if (!name) return;
-    update((d) => ({ ...d, outcomes: [...d.outcomes, { id: uid('o'), name, higherIsBetter: false }] }));
+    update((d) => ({ ...d, outcomes: [...d.outcomes, { id: uid('o'), name, higherIsBetter: false, updatedAt: Date.now() }] }));
     setNewOutcome('');
     toast(`Added outcome "${name}"`);
   };
 
   const setHabit = (id: string, patch: Partial<AppData['habits'][number]>) =>
-    update((d) => ({ ...d, habits: d.habits.map((h) => (h.id === id ? { ...h, ...patch } : h)) }));
+    update((d) => ({ ...d, habits: d.habits.map((h) => (h.id === id ? { ...h, ...patch, updatedAt: Date.now() } : h)) }));
   const setOutcome = (id: string, patch: Partial<AppData['outcomes'][number]>) =>
-    update((d) => ({ ...d, outcomes: d.outcomes.map((o) => (o.id === id ? { ...o, ...patch } : o)) }));
+    update((d) => ({ ...d, outcomes: d.outcomes.map((o) => (o.id === id ? { ...o, ...patch, updatedAt: Date.now() } : o)) }));
 
   const del = (kind: 'habits' | 'outcomes', id: string, name: string) => {
     if (!confirm(`Delete "${name}" and all its logged values? Archive keeps the history instead.`)) return;
@@ -40,7 +40,7 @@ export default function Setup({ data, update, toast }: Props) {
         delete habits[id]; delete outcomes[id];
         return [k, { ...e, habits, outcomes }];
       }));
-      return { ...d, [kind]: (d[kind] as { id: string }[]).filter((x) => x.id !== id), entries } as AppData;
+      return { ...d, [kind]: (d[kind] as { id: string }[]).filter((x) => x.id !== id), entries, deleted: { ...d.deleted, [id]: Date.now() } } as AppData;
     });
   };
 

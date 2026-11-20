@@ -16,7 +16,7 @@ export function touchEntry(d: AppData, date: string, fn: (e: JournalEntry) => Jo
   const existing = d.entries[date] ?? blankEntry(date);
   const habits = { ...existing.habits };
   for (const h of d.habits) if (!h.archived && !(h.id in habits)) habits[h.id] = false;
-  const next = fn({ ...existing, habits, outcomes: { ...existing.outcomes } });
+  const next = { ...fn({ ...existing, habits, outcomes: { ...existing.outcomes } }), updatedAt: Date.now() };
   return { ...d, entries: { ...d.entries, [date]: next } };
 }
 

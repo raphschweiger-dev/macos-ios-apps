@@ -24,14 +24,14 @@ const clamp = (v: number) => Math.max(0, Math.min(10, Math.round(v)));
 export function makeDemoData(days = 90, seed = 42, end = today()): AppData {
   const r = rng(seed);
   const habits = [
-    { id: 'h-cleanser', name: 'Cleanser', color: '#5AC8FA' },
-    { id: 'h-moist', name: 'Moisturizer', color: '#34C759' },
-    { id: 'h-sleep', name: 'Slept 8h+', color: '#AF52DE' },
-    { id: 'h-coffee', name: 'Coffee', color: '#FF9500' },
+    { id: 'h-cleanser', name: 'Cleanser', color: '#5AC8FA', updatedAt: 1 },
+    { id: 'h-moist', name: 'Moisturizer', color: '#34C759', updatedAt: 1 },
+    { id: 'h-sleep', name: 'Slept 8h+', color: '#AF52DE', updatedAt: 1 },
+    { id: 'h-coffee', name: 'Coffee', color: '#FF9500', updatedAt: 1 },
   ];
   const outcomes = [
-    { id: 'o-redness', name: 'Redness', higherIsBetter: false },
-    { id: 'o-energy', name: 'Energy', higherIsBetter: true },
+    { id: 'o-redness', name: 'Redness', higherIsBetter: false, updatedAt: 1 },
+    { id: 'o-energy', name: 'Energy', higherIsBetter: true, updatedAt: 1 },
   ];
   const start = addDays(end, -(days - 1));
   const entries: Record<string, JournalEntry> = {};
@@ -46,8 +46,8 @@ export function makeDemoData(days = 90, seed = 42, end = today()): AppData {
     };
     const redness = clamp(5 - (prevMoist ? 2 : 0) + gauss(r) * 1.4);
     const energy = clamp(5 + (h['h-sleep'] ? 2 : 0) + gauss(r) * 1.5);
-    entries[date] = { date, habits: h, outcomes: { 'o-redness': redness, 'o-energy': energy }, note: '' };
+    entries[date] = { date, habits: h, outcomes: { 'o-redness': redness, 'o-energy': energy }, note: '', updatedAt: 1 };
     prevMoist = h['h-moist'];
   }
-  return { version: 1, habits, outcomes, entries };
+  return { version: 2, habits, outcomes, entries, deleted: {} };
 }

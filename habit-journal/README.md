@@ -4,20 +4,46 @@ A daily journal that finds out which of your **habits** (cleanser, moisturizer, 
 
 > *"On days after I use moisturizer, my redness drops from 5.3 to 2.9."* That's the kind of sentence this app writes for you, along with how much you should trust it.
 
-Works on **macOS** (Mac-style window, sidebar, ⌘-shortcuts) and **iPhone** (tab bar, bottom sheets, add to Home Screen). Your data stays in your browser: no account and no server.
+Works on **macOS** (Mac-style window, sidebar, ⌘-shortcuts) and **iPhone** (tab bar, bottom sheets, add to Home Screen), and keeps the two in sync through a private GitHub repo.
 
-## Use it
+## Install on Mac and iPhone
+
+App URL: **https://raphschweiger-dev.github.io/macos-ios-apps/**
+
+- **Mac** (macOS Sonoma or newer): open the URL in Safari, then **File → Add to Dock**. It opens in its own window like a normal app, and you can find it in Launchpad and Spotlight.
+- **iPhone:** open the URL in Safari, then **Share → Add to Home Screen**. It opens full screen with no browser bars.
+
+## Sync between Mac and iPhone
+
+The journal is saved as `journal.json` in a **private** GitHub repo that only you can see. No other account or server is involved.
+
+1. Create a private repo named `habit-journal-data` at https://github.com/new.
+2. Create a fine-grained token at https://github.com/settings/personal-access-tokens/new:
+   - *Repository access*: **Only select repositories → habit-journal-data**
+   - *Permissions → Repository permissions → Contents*: **Read and write**
+   - Pick an expiration (e.g. 1 year) and copy the token (`github_pat_…`).
+3. In the app, open **Data → Sync with GitHub**, enter your username, `habit-journal-data` and the token, then press **Connect & sync**. Do this once on the Mac and once on the iPhone.
+
+The app syncs when you open it, about 3 seconds after each change, and whenever you switch back to it.
+
+How the sync works:
+- **Merging:** every habit, outcome and day carries an `updatedAt` timestamp, and for each one the newest edit wins.
+- **Deletions:** deleting something leaves a tombstone, so it also disappears on the other device.
+- **Simultaneous saves:** if both devices save at once, GitHub rejects the stale write and the app re-pulls, merges and retries.
+- **History:** the data repo's commit history doubles as a version history of your journal.
+
+## Develop on your Mac
 
 ```bash
+git clone https://github.com/raphschweiger-dev/macos-ios-apps.git
+cd macos-ios-apps/habit-journal
 npm install
 npm run dev        # http://localhost:5173
-npm run build      # → dist/index.html, one self-contained file
-npm test           # stats engine unit tests
+npm test           # stats + sync-merge unit tests
+npm run build      # → dist/ (self-contained index.html + icons + manifest)
 ```
 
-`dist/index.html` is a single offline file. Double-click it on your Mac, or host it anywhere (GitHub Pages works). On iPhone, open it in Safari, then **Share → Add to Home Screen** and it runs like an app.
-
-Data is stored per browser. To move it between Mac and iPhone, use **Data → Export backup** and **Import backup**.
+Pushing to `main` redeploys the app automatically.
 
 ## Daily flow
 
@@ -25,7 +51,7 @@ Data is stored per browser. To move it between Mac and iPhone, use **Data → Ex
    Keyboard: `←`/`→` to change day, `T` for today, `1`–`9` to toggle habits.
 2. **Insights** (⌘2): appears after 14 logged days. **Data → Load demo data** lets you try it right away.
 3. **Habits & Outcomes** (⌘3): add, rename, recolor or archive items, and mark whether higher or lower is better for each outcome.
-4. **Data** (⌘4): JSON backup and import, plus CSV export for pandas or Excel.
+4. **Data** (⌘4): GitHub sync, JSON backup and import, plus CSV export for pandas or Excel.
 
 ## What the Insights page shows
 

@@ -51,13 +51,14 @@ describe('Benjamini-Hochberg', () => {
 describe('lag alignment', () => {
   it('pairs habit on day t with outcome on day t+k', () => {
     const data: AppData = {
-      version: 1,
-      habits: [{ id: 'h', name: 'H', color: '#000' }],
-      outcomes: [{ id: 'o', name: 'O', higherIsBetter: true }],
+      version: 2,
+      deleted: {},
+      habits: [{ id: 'h', name: 'H', color: '#000', updatedAt: 0 }],
+      outcomes: [{ id: 'o', name: 'O', higherIsBetter: true, updatedAt: 0 }],
       entries: {
-        '2026-01-01': { date: '2026-01-01', habits: { h: true }, outcomes: { o: 1 }, note: '' },
-        '2026-01-02': { date: '2026-01-02', habits: { h: false }, outcomes: { o: 7 }, note: '' },
-        '2026-01-03': { date: '2026-01-03', habits: { h: true }, outcomes: { o: 3 }, note: '' },
+        '2026-01-01': { date: '2026-01-01', habits: { h: true }, outcomes: { o: 1 }, note: '', updatedAt: 0 },
+        '2026-01-02': { date: '2026-01-02', habits: { h: false }, outcomes: { o: 7 }, note: '', updatedAt: 0 },
+        '2026-01-03': { date: '2026-01-03', habits: { h: true }, outcomes: { o: 3 }, note: '', updatedAt: 0 },
       },
     };
     const a = alignedSamples(data, 'h', 'o', 1);

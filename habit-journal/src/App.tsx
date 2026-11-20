@@ -5,7 +5,8 @@ import { makeDemoData } from './demoData';
 import Journal, { toggleHabit } from './components/Journal';
 import Insights from './components/Insights';
 import Setup from './components/Setup';
-import DataPanel from './components/DataPanel';
+import DataPanel, { timeAgo } from './components/DataPanel';
+import { useSync, type SyncApi } from './sync/useSync';
 import { IconAuto, IconDatabase, IconFlame, IconInsights, IconJournal, IconMoon, IconSliders, IconSun } from './components/Icons';
 
 type View = 'journal' | 'insights' | 'setup' | 'data';
@@ -25,6 +26,7 @@ function readTheme(): Theme {
 
 export default function App() {
   const [data, update, setData] = useAppData();
+  const sync = useSync(data, setData);
   const [view, setView] = useState<View>('journal');
   const [date, setDate] = useState(today());
   const [theme, setTheme] = useState<Theme>(readTheme);
@@ -44,11 +46,12 @@ export default function App() {
   }, [theme]);
 
   const loadDemo = useCallback(() => {
+    if (sync.cfg) { toast('Turn off sync before loading demo data'); return; }
     if (Object.keys(data.entries).length && !confirm('Replace your journal with 90 days of demo data? (Export a backup first if you want to keep it.)')) return;
     setData(makeDemoData());
     setView('insights');
     toast('Loaded 90 days of demo data');
-  }, [data.entries, setData, toast]);
+  }, [data.entries, setData, toast, sync.cfg]);
 
   const streak = useMemo(() => {
     let d = data.entries[today()] ? today() : addDays(today(), -1);
@@ -109,9 +112,12 @@ export default function App() {
             <div className="streak" title="Consecutive days logged">
               <IconFlame width={16} height={16} /> <b>{streak}</b> day streak
             </div>
-            <button className="icon-btn sm" onClick={() => setTheme(nextTheme[theme])} title={`Appearance: ${theme}`}>
-              <ThemeIcon width={16} height={16} />
-            </button>
+            <div className="foot-right">
+              <SyncIndicator sync={sync} onClick={() => setView('data')} />
+              <button className="icon-btn sm" onClick={() => setTheme(nextTheme[theme])} title={`Appearance: ${theme}`}>
+                <ThemeIcon width={16} height={16} />
+              </button>
+            </div>
           </div>
         </aside>
 
@@ -120,6 +126,7 @@ export default function App() {
             <h1 className="toolbar-title">{TITLES[view]}</h1>
             <div className="toolbar-actions">
               {view === 'journal' && date !== today() && <button className="pill-btn" onClick={() => setDate(today())}>Jump to today</button>}
+              <span className="only-mobile"><SyncIndicator sync={sync} onClick={() => setView('data')} compact /></span>
               <button className="icon-btn sm only-mobile" onClick={() => setTheme(nextTheme[theme])} title={`Appearance: ${theme}`}><ThemeIcon width={16} height={16} /></button>
             </div>
           </header>
@@ -128,7 +135,7 @@ export default function App() {
               {view === 'journal' && <Journal data={data} update={update} date={date} setDate={setDate} />}
               {view === 'insights' && <Insights data={data} onLoadDemo={loadDemo} onGoJournal={() => setView('journal')} />}
               {view === 'setup' && <Setup data={data} update={update} toast={toast} />}
-              {view === 'data' && <DataPanel data={data} setData={setData} onLoadDemo={loadDemo} toast={toast} />}
+              {view === 'data' && <DataPanel data={data} setData={setData} onLoadDemo={loadDemo} toast={toast} sync={sync} />}
             </div>
           </div>
         </main>
@@ -145,5 +152,16 @@ export default function App() {
 
       <div className={`toast ${toastMsg ? 'show' : ''}`} role="status">{toastMsg}</div>
     </div>
+  );
+}
+
+function SyncIndicator({ sync, onClick, compact }: { sync: SyncApi; onClick: () => void; compact?: boolean }) {
+  const s = sync.status;
+  if (s.kind === 'off') return null;
+  const label = s.kind === 'syncing' ? 'Syncing…' : s.kind === 'error' ? 'Sync error' : `Synced ${timeAgo(s.lastSyncedAt)}`;
+  return (
+    <button className={`sync-ind ${s.kind}`} onClick={onClick} title={s.kind === 'error' ? s.message : label}>
+      <span className="sync-dot" />{!compact && <span>{s.kind === 'ok' ? 'Synced' : label}</span>}
+    </button>
   );
 }
